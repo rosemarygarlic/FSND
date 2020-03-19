@@ -130,8 +130,12 @@ def venues():
       "num_upcoming_shows": 0,
     }]
   }] """
-  cities = db.session.query(Venue.city).all()
-  data = [{"city": city, "venues": Venue.query.filter(Venue.city==city).all()} for city in cities]
+  cities = db.session.query(Venue.city, Venue.state).distinct()
+  data = [{"city": city[0], 
+           "state": city[1],
+          "venues": Venue.query.filter(Venue.city==city[0]).all()
+          } for city in cities
+          ]
   print(data)
   print(cities)
   return render_template('pages/venues.html', areas=data)
@@ -155,7 +159,7 @@ def search_venues():
 def show_venue(venue_id):
   # shows the venue page with the given venue_id
   # TODO: replace with real venue data from the venues table, using venue_id
-  data1={
+  """ data1={
     "id": 1,
     "name": "The Musical Hop",
     "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
@@ -231,8 +235,10 @@ def show_venue(venue_id):
     }],
     "past_shows_count": 1,
     "upcoming_shows_count": 1,
-  }
+  } 
   data = list(filter(lambda d: d['id'] == venue_id, [data1, data2, data3]))[0]
+  """
+  data = Venue.query.get(venue_id)
   return render_template('pages/show_venue.html', venue=data)
 
 #  Create Venue
