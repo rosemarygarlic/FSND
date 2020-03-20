@@ -46,6 +46,7 @@ class Venue(db.Model):
     state = db.Column(db.String(120), nullable = False)
     address = db.Column(db.String(120), nullable = False)
     phone = db.Column(db.String(120), nullable = False)
+    genres = db.Column(db.ARRAY(db.String(120)))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String(120))
@@ -65,7 +66,7 @@ class Artist(db.Model):
     city = db.Column(db.String(120), nullable = False)
     state = db.Column(db.String(120), nullable = False)
     phone = db.Column(db.String(120), nullable = False)
-    genres = db.Column(db.String(120))
+    genres = db.Column(db.ARRAY(db.String(120)))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String(120))
@@ -239,6 +240,7 @@ def show_venue(venue_id):
   data = list(filter(lambda d: d['id'] == venue_id, [data1, data2, data3]))[0]
   """
   data = Venue.query.get(venue_id)
+  print(data.genres)
   return render_template('pages/show_venue.html', venue=data)
 
 #  Create Venue
@@ -260,6 +262,7 @@ def create_venue_submission():
     venue.state = request.form['state']
     venue.address = request.form['address']
     venue.phone = request.form['phone']
+    venue.genres = request.form.getlist('genres')
     venue.facebook_link = request.form['facebook_link']
     db.session.add(venue)
     db.session.commit()
@@ -291,7 +294,7 @@ def delete_venue(venue_id):
 @app.route('/artists')
 def artists():
   # TODO: replace with real data returned from querying the database
-  data=[{
+  """ data=[{
     "id": 4,
     "name": "Guns N Petals",
   }, {
@@ -300,7 +303,8 @@ def artists():
   }, {
     "id": 6,
     "name": "The Wild Sax Band",
-  }]
+  }] """
+  data = Artist.query.all()
   return render_template('pages/artists.html', artists=data)
 
 @app.route('/artists/search', methods=['POST'])
@@ -322,7 +326,7 @@ def search_artists():
 def show_artist(artist_id):
   # shows the venue page with the given venue_id
   # TODO: replace with real venue data from the venues table, using venue_id
-  data1={
+  """ data1={
     "id": 4,
     "name": "Guns N Petals",
     "genres": ["Rock n Roll"],
@@ -392,8 +396,11 @@ def show_artist(artist_id):
     }],
     "past_shows_count": 0,
     "upcoming_shows_count": 3,
-  }
+  } 
   data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
+  """
+  data = Artist.query.get(artist_id)
+  print(data.genres)
   return render_template('pages/show_artist.html', artist=data)
 
 #  Update
@@ -469,6 +476,8 @@ def create_artist_submission():
     artist.city = request.form['city']
     artist.state = request.form['state']
     artist.phone = request.form['phone']
+    print( type(request.form.getlist('genres')))
+    artist.genres = list(request.form.getlist('genres'))
     artist.facebook_link = request.form['facebook_link']
     db.session.add(artist)
     db.session.commit()
