@@ -14,6 +14,7 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 import sys
+import datetime as dt
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -52,7 +53,7 @@ class Venue(db.Model):
     website = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String)
-    shows = db.relationship('Show', back_populates='venues')
+    shows = db.relationship('Show', back_populates='venue')
 
 
 
@@ -72,17 +73,17 @@ class Artist(db.Model):
     website = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String())
-    shows = db.relationship('Show', back_populates='artists')
+    shows = db.relationship('Show', back_populates='artist')
 
 class Show(db.Model):
     __tablename__ = 'Show'
 
     id = db.Column(db.Integer, primary_key = True)
-    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), primary_key = True)
-    venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), primary_key = True)
+    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable = False)
+    venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable = False)
     start_time = db.Column(db.DateTime, nullable = False)
-    venues = db.relationship(Venue, back_populates='shows')
-    artists = db.relationship(Artist, back_populates='shows')
+    venue = db.relationship(Venue, back_populates='shows')
+    artist = db.relationship(Artist, back_populates='shows')
 
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
@@ -249,8 +250,23 @@ def show_venue(venue_id):
   } 
   data = list(filter(lambda d: d['id'] == venue_id, [data1, data2, data3]))[0]
   """
-  data = Venue.query.get(venue_id)
-  print(data.genres)
+  venue = Venue.query.get(venue_id)
+  data = venue.__dict__
+  data['upcoming_shows'] = []
+  data['past_shows'] = []
+  for show in venue.shows:
+    show_data = {}
+    show_data['artist_id'] = show.artist_id
+    show_data['artist_name'] = show.artist.name
+    show_data['start_time'] = str(show.start_time)
+    show_data['artist_image_link'] = show.artist.image_link
+    if(show.start_time >= dt.datetime.now()):
+      data['upcoming_shows'].append(show_data)
+    else:
+      data['past_shows'].append(show_data)
+
+  data['upcoming_shows_count'] = len(data['upcoming_shows'])
+  data['past_shows_count'] = len(data['past_shows'])
   return render_template('pages/show_venue.html', venue=data)
 
 #  Create Venue
@@ -564,7 +580,9 @@ def create_show_submission():
     show = Show()
     show.venue_id = request.form['venue_id']
     show.artist_id = request.form['artist_id']
-    show.start_time = request.form['start_time']   
+    show.start_time = request.form['start_time'] 
+    db.session.add(show)
+    db.session.commit()  
     # on successful db insert, flash success
     flash('Show was successfully listed!') 
   except:
