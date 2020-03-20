@@ -141,11 +141,14 @@ def venues():
   data = []
   for city, state in cities:
     city_data = {'city' : city, 'state' : state, 'venues' : []}
+
     for venue in Venue.query.filter(Venue.city==city).all():
       venue_data ={'id' : venue.id, 'name' : venue.name}
-      upcoming_shows = Show.query.filter(Show.venue_id == venue.id, Show.start_time >= dt.datetime.now()).all()
+      shows = venue.shows
+      upcoming_shows = [show for show in shows if show.start_time > dt.datetime.now()]
       venue_data['num_upcoming_shows'] = len(upcoming_shows)
       city_data['venues'].append(venue_data)
+
     data.append(city_data)
   
   return render_template('pages/venues.html', areas=data)
@@ -155,6 +158,7 @@ def search_venues():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
+  """
   response={
     "count": 1,
     "data": [{
@@ -162,7 +166,17 @@ def search_venues():
       "name": "The Dueling Pianos Bar",
       "num_upcoming_shows": 0,
     }]
-  }
+    }
+    """
+  search_term = request.form['search_term']
+  results = Venue.query.filter(Venue.name.ilike(f'%{search_term}%')).all()
+  response = {'count' : len(results), 'data' : []}
+  for venue in results:
+    venue_data = {'id' : venue.id, 'name' : venue.name}
+    upcoming_shows = [show for show in venue.shows if show.start_time > dt.datetime.now()]
+    venue_data['num_upcoming_shows'] = len(upcoming_shows)
+    response['data'].append(venue_data)
+  
   return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/venues/<int:venue_id>')
@@ -336,6 +350,7 @@ def search_artists():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
+  """
   response={
     "count": 1,
     "data": [{
@@ -344,6 +359,17 @@ def search_artists():
       "num_upcoming_shows": 0,
     }]
   }
+  """
+  search_term = request.form['search_term']
+  results = Artist.query.filter(Artist.name.ilike(f'%{search_term}%')).all()
+  response = {'count' : len(results), 'data' : []}
+
+  for artist in results:
+    artist_data = {'id' : artist.id, 'name' : artist.name}
+    upcoming_shows = [show for show in artist.shows if show.start_time > dt.datetime.now()]
+    artist_data['num_upcoming_shows'] = len(upcoming_shows)
+    response['data'].append(artist_data)
+
   return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/artists/<int:artist_id>')
