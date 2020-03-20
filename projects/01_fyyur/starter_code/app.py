@@ -30,13 +30,7 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
-"""
-shows = db.Table('Shows',
-                db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key = True),
-                db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key = True),
-                db.Column('start_time', db.DateTime, nullable = False)
-)
-"""
+
 
 class Venue(db.Model):
     __tablename__ = 'Venue'
@@ -54,7 +48,6 @@ class Venue(db.Model):
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String)
     shows = db.relationship('Show', back_populates='venue')
-
 
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
@@ -121,7 +114,8 @@ def index():
 def venues():
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  """ data=[{
+  """
+  data=[{
     "city": "San Francisco",
     "state": "CA",
     "venues": [{
@@ -141,15 +135,19 @@ def venues():
       "name": "The Dueling Pianos Bar",
       "num_upcoming_shows": 0,
     }]
-  }] """
+  }] 
+  """
   cities = db.session.query(Venue.city, Venue.state).distinct()
-  data = [{"city": city[0], 
-           "state": city[1],
-          "venues": Venue.query.filter(Venue.city==city[0]).all()
-          } for city in cities
-          ]
-  print(data)
-  print(cities)
+  data = []
+  for city, state in cities:
+    city_data = {'city' : city, 'state' : state, 'venues' : []}
+    for venue in Venue.query.filter(Venue.city==city).all():
+      venue_data ={'id' : venue.id, 'name' : venue.name}
+      upcoming_shows = Show.query.filter(Show.venue_id == venue.id, Show.start_time >= dt.datetime.now()).all()
+      venue_data['num_upcoming_shows'] = len(upcoming_shows)
+      city_data['venues'].append(venue_data)
+    data.append(city_data)
+  
   return render_template('pages/venues.html', areas=data)
 
 @app.route('/venues/search', methods=['POST'])
