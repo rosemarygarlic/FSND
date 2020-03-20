@@ -5,7 +5,6 @@
 # check referential integrity
 # set constrains on attribute formats
 # check how migrations work
-# delete venue
 # add fields to venue and artist forms
 import json
 import dateutil.parser
@@ -320,6 +319,10 @@ def create_venue_submission():
     venue.phone = request.form['phone']
     venue.genres = request.form.getlist('genres')
     venue.facebook_link = request.form['facebook_link']
+    venue.image_link = request.form['image_link']
+    venue.website = request.form['website']
+    venue.seeking_talent = (request.form['seeking_talent'] == 'y' or request.form['seeking_talent'] == 'on')
+    venue.seeking_description = request.form['seeking_description']
     db.session.add(venue)
     db.session.commit()
     # on successful db insert, flash success
@@ -529,7 +532,7 @@ def edit_artist(artist_id):
     "facebook_link": "https://www.facebook.com/GunsNPetals",
     "seeking_venue": True,
     "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
-    "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
+    "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=f"ormat&fit=crop&w=300&q=80
   }
   """
   artist = Artist.query.get(artist_id)
@@ -546,6 +549,7 @@ def edit_artist(artist_id):
     "seeking_description":  artist.seeking_description,
     "image_link": artist.image_link
   }
+  print(data)
   # TODO: populate form with fields from artist with ID <artist_id>
   return render_template('forms/edit_artist.html', form=form, artist=data)
 
@@ -554,6 +558,7 @@ def edit_artist_submission(artist_id):
   # TODO: take values from the form submitted, and update existing
   # artist record with ID <artist_id> using the new attributes
   try:
+    print(request.form)
     artist = Artist.query.get(artist_id)
     artist.name = request.form['name']
     artist.city = request.form['city']
@@ -561,6 +566,10 @@ def edit_artist_submission(artist_id):
     artist.phone = request.form['phone']
     artist.genres = request.form.getlist('genres')
     artist.facebook_link = request.form['facebook_link']
+    artist.image_link = request.form['image_link']
+    artist.website = request.form['website']
+    artist.seeking_venue = (request.form['seeking_venue'] == 'y' or request.form['seeking_venue'] == 'on')
+    artist.seeking_description = request.form['seeking_description']
     db.session.add(artist)
     db.session.commit()
   except:
@@ -622,6 +631,10 @@ def edit_venue_submission(venue_id):
     venue.phone = request.form['phone']
     venue.genres = request.form.getlist('genres')
     venue.facebook_link = request.form['facebook_link']
+    venue.image_link = request.form['image_link']
+    venue.website = request.form['website']
+    venue.seeking_talent = (request.form['seeking_talent'] == 'y' or request.form['seeking_talent'] == 'on')
+    venue.seeking_description = request.form['seeking_description']
     db.session.add(venue)
     db.session.commit()
   except:
@@ -645,6 +658,7 @@ def create_artist_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
   try:
+    print(request.form)
     artist = Artist()
     artist.name = request.form['name']
     artist.city = request.form['city']
@@ -653,6 +667,10 @@ def create_artist_submission():
     print( type(request.form.getlist('genres')))
     artist.genres = list(request.form.getlist('genres'))
     artist.facebook_link = request.form['facebook_link']
+    artist.image_link = request.form['image_link']
+    artist.website = request.form['website']
+    artist.seeking_venue = (request.form['seeking_venue'] == 'y')
+    artist.seeking_description = request.form['seeking_description']
     db.session.add(artist)
     db.session.commit()
     # on successful db insert, flash success
