@@ -423,7 +423,23 @@ def show_artist(artist_id):
   } 
   data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
   """
-  data = Artist.query.get(artist_id)
+  artist = Venue.query.get(artist_id)
+  data = artist.__dict__
+  data['upcoming_shows'] = []
+  data['past_shows'] = []
+  for show in artist.shows:
+    show_data = {}
+    show_data['venue_id'] = show.venue_id
+    show_data['venue_name'] = show.venue.name
+    show_data['start_time'] = str(show.start_time)
+    show_data['venue_image_link'] = show.venue.image_link
+    if(show.start_time >= dt.datetime.now()):
+      data['upcoming_shows'].append(show_data)
+    else:
+      data['past_shows'].append(show_data)
+
+  data['upcoming_shows_count'] = len(data['upcoming_shows'])
+  data['past_shows_count'] = len(data['past_shows'])
   return render_template('pages/show_artist.html', artist=data)
 
 #  Update
