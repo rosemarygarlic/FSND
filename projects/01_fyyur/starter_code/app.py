@@ -52,7 +52,7 @@ class Venue(db.Model):
     website = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String)
-    shows = db.relationship('Show', back_populates='venue')
+    shows = db.relationship('Show', back_populates='venue', cascade='delete')
 
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
@@ -71,7 +71,7 @@ class Artist(db.Model):
     website = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String())
-    shows = db.relationship('Show', back_populates='artist')
+    shows = db.relationship('Show', back_populates='artist', cascade='delete')
 
 class Show(db.Model):
     __tablename__ = 'Show'
@@ -340,10 +340,21 @@ def create_venue_submission():
 def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+  try:
+    venue = Venue.query.get(venue_id)
+    db.session.delete(venue)
+    db.session.commit()
+  except:
+    db.session.rollback()
+    print(sys.exc_info())
+    flash('An error occurred. Venue ' + venue_id + ' could not be deleted.')
+  finally:
+    db.session.close()
+
 
   # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
   # clicking that button delete it from the db then redirect the user to the homepage
-  return None
+  return jsonify({})
 
 #  Artists
 #  ----------------------------------------------------------------

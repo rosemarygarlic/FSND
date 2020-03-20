@@ -8,6 +8,7 @@
 		</h1>
 		<p class="subtitle">
 			ID: {{ venue.id }}
+			<button id='delete-venue' data-id='{{ venue.id }}'>Delete this venue</button>
 		</p>
 		<div class="genres">
 			{% for genre in venue.genres %}
@@ -74,6 +75,5 @@
 		{% endfor %}
 	</div>
 </section>
-
 {% endblock %}
 
