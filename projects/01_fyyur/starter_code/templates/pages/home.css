@@ -1,3 +1,25 @@
 h1 {
 	margin-bottom: 1em;
 }
+
+.homepage-lists{
+	width: 80%;
+	height: 200px;
+	background: aqua;
+	margin: auto;
+	padding: 10px;
+}
+
+.artists-list {
+	width: 15%;
+	height: 200px;
+	background: red;
+	float: left;
+	color: blue;
+  }
+  
+  .venues-list {
+	margin-left: 15%;
+	height: 200px;
+	background: black;
+  }

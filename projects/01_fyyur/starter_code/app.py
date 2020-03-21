@@ -5,7 +5,6 @@
 # check referential integrity
 # set constrains on attribute formats
 # check how migrations work
-# add fields to venue and artist forms
 import json
 import dateutil.parser
 import babel
@@ -51,6 +50,7 @@ class Venue(db.Model):
     website = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String)
+    created = db.Column(db.DateTime)
     shows = db.relationship('Show', back_populates='venue', cascade='delete')
 
 
@@ -70,7 +70,9 @@ class Artist(db.Model):
     website = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String())
+    created = db.Column(db.DateTime)
     shows = db.relationship('Show', back_populates='artist', cascade='delete')
+    
 
 class Show(db.Model):
     __tablename__ = 'Show'
@@ -108,7 +110,9 @@ app.jinja_env.filters['datetime'] = format_datetime
 
 @app.route('/')
 def index():
-  return render_template('pages/home.html')
+  artists = Artist.query.order_by(Artist.created.desc()).limit(10).all()
+  venues = Venue.query.order_by(Venue.created.desc()).limit(10).all()
+  return render_template('pages/home.html', artists=artists, venues=venues)
 
 
 #  Venues
@@ -323,6 +327,7 @@ def create_venue_submission():
     venue.website = request.form['website']
     venue.seeking_talent = (request.form['seeking_talent'] == 'y' or request.form['seeking_talent'] == 'on')
     venue.seeking_description = request.form['seeking_description']
+    venue.created = dt.datetime.now()
     db.session.add(venue)
     db.session.commit()
     # on successful db insert, flash success
@@ -337,7 +342,7 @@ def create_venue_submission():
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  return render_template('pages/home.html')
+  return redirect(url_for('index'))
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
@@ -549,7 +554,6 @@ def edit_artist(artist_id):
     "seeking_description":  artist.seeking_description,
     "image_link": artist.image_link
   }
-  print(data)
   # TODO: populate form with fields from artist with ID <artist_id>
   return render_template('forms/edit_artist.html', form=form, artist=data)
 
@@ -558,7 +562,6 @@ def edit_artist_submission(artist_id):
   # TODO: take values from the form submitted, and update existing
   # artist record with ID <artist_id> using the new attributes
   try:
-    print(request.form)
     artist = Artist.query.get(artist_id)
     artist.name = request.form['name']
     artist.city = request.form['city']
@@ -574,7 +577,6 @@ def edit_artist_submission(artist_id):
     db.session.commit()
   except:
     db.session.rollback()
-    print(request.form)
     print(sys.exc_info())
   finally:
     db.session.close()
@@ -658,19 +660,18 @@ def create_artist_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
   try:
-    print(request.form)
     artist = Artist()
     artist.name = request.form['name']
     artist.city = request.form['city']
     artist.state = request.form['state']
     artist.phone = request.form['phone']
-    print( type(request.form.getlist('genres')))
     artist.genres = list(request.form.getlist('genres'))
     artist.facebook_link = request.form['facebook_link']
     artist.image_link = request.form['image_link']
     artist.website = request.form['website']
     artist.seeking_venue = (request.form['seeking_venue'] == 'y')
     artist.seeking_description = request.form['seeking_description']
+    artist.created = dt.datetime.now()
     db.session.add(artist)
     db.session.commit()
     # on successful db insert, flash success
@@ -684,7 +685,7 @@ def create_artist_submission():
   
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
-  return render_template('pages/home.html')
+  return redirect(url_for('index'))
 
 
 #  Shows

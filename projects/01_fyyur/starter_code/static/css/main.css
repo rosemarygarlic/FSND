@@ -216,3 +216,19 @@ h2.monospace {
   font-size: small;
   border: none;
 }
+
+.homepage-lists{
+  display: flex;
+  /*align-items: center; */
+  justify-content: center; 
+
+  
+}
+
+.artists-list {
+  flex: 0 0 50%;
+}
+  
+.venues-list {
+	flex: 1;
+}
