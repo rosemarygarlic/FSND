@@ -64,22 +64,19 @@
                 (request.endpoint == 'search_venues') or
                 (request.endpoint == 'show_venue') %}
               <form class="search" method="post" action="/venues/search">
-                <input class="form-control"
+                <input class="form-control search-term"
                   type="search"
                   name="search_term"
-                  class="search-term"
                   placeholder="Name"
                   aria-label="Search">
-                  <input class="form-control"
+                  <input class="form-control search-by-city"
                   type="search"
                   name="search_by_city"
-                  class="search-by-city"
                   placeholder="City"
                   aria-label="Search">
-                  <input class="form-control"
+                  <input class="form-control search-by-state"
                   type="search"
                   name="search_by_state"
-                  class="search-by-state"
                   placeholder="State"
                   aria-label="Search">
                   <input type='submit' value='Find venues'> 
@@ -89,21 +86,19 @@
                 (request.endpoint == 'search_artists') or
                 (request.endpoint == 'show_artist') %}
               <form class="search" method="post" action="/artists/search">
-                <input class="form-control"
+                <input class="form-control search-term"
                   type="search"
                   name="search_term"
                   placeholder="Name"
                   aria-label="Search">
-                  <input class="form-control"
+                  <input class="form-control search-by-city"
                   type="search"
                   name="search_by_city"
-                  class="search-by-city"
                   placeholder="City"
                   aria-label="Search">
-                  <input class="form-control"
+                  <input class="form-control search-by-state"
                   type="search"
                   name="search_by_state"
-                  class="search-by-state"
                   placeholder="State"
                   aria-label="Search">
                   <input type='submit' value='Find artists'> 

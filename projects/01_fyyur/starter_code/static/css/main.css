@@ -67,18 +67,10 @@ p.lead {
   display: flex;
 }
 
-.search label {
-  width: 300px;
-}
 
-.search-term {
-  display: inline-block;
- 
-}
 
-.search-by-city {
-   display: inline-block;
-   float: right;
+.search-by-state {
+  max-width: 80px;
 }
 
 .navbar-default .navbar-nav>.open>a, .navbar-default .navbar-nav>.active>a {
@@ -244,7 +236,6 @@ h2.monospace {
 
 .homepage-lists{
   display: flex;
-  /*align-items: center; */
   justify-content: center; 
 
   
@@ -256,4 +247,8 @@ h2.monospace {
   
 .venues-list {
 	flex: 1;
+}
+
+.artists-list h4, .venues-list h4 {
+  margin-bottom: 20px;
 }

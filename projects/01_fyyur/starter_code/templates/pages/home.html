@@ -24,8 +24,9 @@
    </div>
 	<div class="homepage-lists">
 	   <div class="venues-list">
-	   <ul class="items">
 	   <h4>New Artists:</h4>
+	   <ul class="items">
+	   
 	   {% for artist in artists %}
 	   <li>
 	 	<a href="/artists/{{ artist.id }}">
@@ -39,8 +40,8 @@
 	  </ul>
 	  </div>
 	  <div class="artists-list" display='inline-block'>
-         <ul class="items">
-		   <h4>New Venues:</h4>
+		 <h4>New Venues:</h4>
+         <ul class="items">   
 	      {% for venue in venues %}
 	       <li>
 		    <a href="/venues/{{ venue.id }}">
