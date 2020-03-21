@@ -173,7 +173,16 @@ def search_venues():
     }
     """
   search_term = request.form['search_term']
-  results = Venue.query.filter(Venue.name.ilike(f'%{search_term}%')).all()
+  city = request.form['search_by_city']
+  state = request.form['search_by_state']
+
+
+  results = Venue.query.filter(Venue.name.ilike(f'%{search_term}%'))
+  if len(city)>0:
+     results = results.filter(Venue.city == city)
+  if len(state)>0:
+     results = results.filter(Venue.state == state)
+  results = results.all()
   response = {'count' : len(results), 'data' : []}
   for venue in results:
     venue_data = {'id' : venue.id, 'name' : venue.name}
@@ -398,8 +407,19 @@ def search_artists():
     }]
   }
   """
+ 
   search_term = request.form['search_term']
-  results = Artist.query.filter(Artist.name.ilike(f'%{search_term}%')).all()
+  city = request.form['search_by_city']
+  state = request.form['search_by_state']
+
+
+  results = Artist.query.filter(Artist.name.ilike(f'%{search_term}%'))
+  if len(city)>0:
+     results = results.filter(Artist.city == city)
+  if len(state)>0:
+     results = results.filter(Artist.state == state)
+  results = results.all()
+
   response = {'count' : len(results), 'data' : []}
 
   for artist in results:

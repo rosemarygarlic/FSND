@@ -60,10 +60,27 @@ p.lead {
   background-color: white;
 }
 .navbar-nav .search {
-  margin-top: 6px;
+  margin-top: 6x;
+  padding-top: 60
   width: 300px;
   margin-right: 15px;
+  display: flex;
 }
+
+.search label {
+  width: 300px;
+}
+
+.search-term {
+  display: inline-block;
+ 
+}
+
+.search-by-city {
+   display: inline-block;
+   float: right;
+}
+
 .navbar-default .navbar-nav>.open>a, .navbar-default .navbar-nav>.active>a {
     background: none;
     box-shadow: none;
@@ -78,6 +95,12 @@ p.lead {
   padding-left: 18px;
   padding-right: 18px;
   font-size: 1.4rem;
+  display: inline-block;
+
+}
+
+.navbar-nav {
+  float: none;
 }
 
 .btn-default {
@@ -147,6 +170,8 @@ p > i {
   font-weight: bold;
   background: #ffffc6;
 }
+
+
 
 .seeking > button {
   margin-left: 15px;

@@ -52,6 +52,12 @@
           <a class="navbar-brand" href="/">🔥</a>
         </div>
         <div class="collapse navbar-collapse">
+        
+          <ul class="nav navbar-nav">
+            <li {% if request.endpoint == 'venues' %} class="active" {% endif %}><a href="{{ url_for('venues') }}">Venues</a></li>
+            <li {% if request.endpoint == 'artists' %} class="active" {% endif %}><a href="{{ url_for('artists') }}">Artists</a></li>
+            <li {% if request.endpoint == 'shows' %} class="active" {% endif %}><a href="{{ url_for('shows') }}">Shows</a></li>
+          </ul>
           <ul class="nav navbar-nav">
             <li>
               {% if (request.endpoint == 'venues') or
@@ -61,8 +67,22 @@
                 <input class="form-control"
                   type="search"
                   name="search_term"
-                  placeholder="Find a venue"
+                  class="search-term"
+                  placeholder="Name"
                   aria-label="Search">
+                  <input class="form-control"
+                  type="search"
+                  name="search_by_city"
+                  class="search-by-city"
+                  placeholder="City"
+                  aria-label="Search">
+                  <input class="form-control"
+                  type="search"
+                  name="search_by_state"
+                  class="search-by-state"
+                  placeholder="State"
+                  aria-label="Search">
+                  <input type='submit' value='Find venues'> 
               </form>
               {% endif %}
               {% if (request.endpoint == 'artists') or
@@ -72,16 +92,24 @@
                 <input class="form-control"
                   type="search"
                   name="search_term"
-                  placeholder="Find an artist"
+                  placeholder="Name"
                   aria-label="Search">
+                  <input class="form-control"
+                  type="search"
+                  name="search_by_city"
+                  class="search-by-city"
+                  placeholder="City"
+                  aria-label="Search">
+                  <input class="form-control"
+                  type="search"
+                  name="search_by_state"
+                  class="search-by-state"
+                  placeholder="State"
+                  aria-label="Search">
+                  <input type='submit' value='Find artists'> 
               </form>
               {% endif %}
             </li>
-          </ul>
-          <ul class="nav navbar-nav">
-            <li {% if request.endpoint == 'venues' %} class="active" {% endif %}><a href="{{ url_for('venues') }}">Venues</a></li>
-            <li {% if request.endpoint == 'artists' %} class="active" {% endif %}><a href="{{ url_for('artists') }}">Artists</a></li>
-            <li {% if request.endpoint == 'shows' %} class="active" {% endif %}><a href="{{ url_for('shows') }}">Shows</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
