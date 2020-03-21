@@ -193,7 +193,6 @@ def search_venues():
   city = request.form['search_by_city']
   state = request.form['search_by_state']
 
-
   results = Venue.query.filter(Venue.name.ilike(f'%{search_term}%'))
   if len(city)>0:
      results = results.filter(Venue.city == city)
@@ -207,7 +206,8 @@ def search_venues():
     venue_data['num_upcoming_shows'] = len(upcoming_shows)
     response['data'].append(venue_data)
   
-  return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
+  return render_template('pages/search_venues.html', results=response, 
+                search_term=f'{search_term} {city} {state}'.strip())
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
@@ -381,6 +381,7 @@ def delete_venue(venue_id):
     venue = Venue.query.get(venue_id)
     db.session.delete(venue)
     db.session.commit()
+    flash('Venue ' + venue_id + ' successfully deleted!')
   except:
     db.session.rollback()
     print(sys.exc_info())
@@ -450,7 +451,8 @@ def search_artists():
     artist_data['num_upcoming_shows'] = len(upcoming_shows)
     response['data'].append(artist_data)
 
-  return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
+  return render_template('pages/search_artists.html', results=response, 
+                search_term=f'{search_term} {city} {state}'.strip())
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
