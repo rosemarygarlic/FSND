@@ -48,17 +48,17 @@ class Venue(db.Model):
     city = db.Column(db.String(120), nullable = False)
     state = db.Column(db.String(120), nullable = False)
     address = db.Column(db.String(120), nullable = False)
-    phone = db.Column(db.String(120), nullable = False)
+    phone = db.Column(db.String(120),  unique = True)
     genres = db.relationship('Genre', secondary=venue_genres, 
                              backref = db.backref('venues', lazy = True))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
+    image_link = db.Column(db.String(500), unique = True)
+    facebook_link = db.Column(db.String(120), unique = True)
     website = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String)
     created = db.Column(db.DateTime)
     shows = db.relationship('Show', back_populates='venue', cascade='delete')
-
+    
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -69,11 +69,11 @@ class Artist(db.Model):
     name = db.Column(db.String, nullable = False, unique = True)
     city = db.Column(db.String(120), nullable = False)
     state = db.Column(db.String(120), nullable = False)
-    phone = db.Column(db.String(120), nullable = False)
+    phone = db.Column(db.String(120), unique = True)
     genres = db.relationship('Genre', secondary=artist_genres, 
                              backref = db.backref('artists', lazy = True))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
+    image_link = db.Column(db.String(500), unique = True)
+    facebook_link = db.Column(db.String(120), unique = True)
     website = db.Column(db.String(120))
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String())
@@ -116,6 +116,59 @@ def format_datetime(value, format='medium'):
   return babel.dates.format_datetime(date, format)
 
 app.jinja_env.filters['datetime'] = format_datetime
+#----------------------------------------------------------------------------#
+# Utils
+#----------------------------------------------------------------------------#
+
+def populate_model(model, data):
+    model.name = data['name']
+    model.city = data['city']
+    model.state = data['state']
+    if len(data['phone']) > 0:
+      model.phone = data['phone']
+    for genre_name in data.getlist('genres'):
+      genre = Genre.query.filter(Genre.name == genre_name).first()
+      if genre is None:
+        genre = Genre(name=genre_name)
+      model.genres.append(genre)  
+    if len(data['facebook_link']) > 0:
+      model.facebook_link = data['facebook_link']
+    if len(data['image_link']) > 0:
+      model.image_link = data['image_link']
+    if len(request.form['website']) > 0:
+      model.website = data['website']
+    model.seeking_description = data['seeking_description']
+    model.created = dt.datetime.now()
+
+def edit_model(model, data):
+    model.name = data['name']
+    model.city = data['city']
+    model.state = data['state']
+    if len(data['phone']) > 0:
+      model.phone = data['phone']
+    else:
+      model.phone = None
+    for genre_name in data.getlist('genres'):
+      genre = Genre.query.filter(Genre.name == genre_name).first()
+      if genre is None:
+        genre = Genre(name=genre_name)
+      model.genres.append(genre)  
+    if len(data['facebook_link']) > 0:
+      model.facebook_link = data['facebook_link']
+    else:
+      model.facebook_link = None
+    if len(data['image_link']) > 0:
+      model.image_link = data['image_link']
+    else:
+      model.image_link = None
+    if len(request.form['website']) > 0:
+      model.website = data['website']
+    else:
+      model.website = None
+    model.seeking_description = data['seeking_description']
+
+  
+
 
 #----------------------------------------------------------------------------#
 # Controllers.
@@ -340,23 +393,13 @@ def create_venue_submission():
   try:
     print(request.form)
     venue = Venue()
-    venue.name = request.form['name']
-    venue.city = request.form['city']
-    venue.state = request.form['state']
+    populate_model(venue, request.form)
     venue.address = request.form['address']
-    venue.phone = request.form['phone']
-    for genre_name in request.form.getlist('genres'):
-      genre = Genre.query.filter(Genre.name == genre_name).first()
-      if genre is None:
-        genre = Genre(name=genre_name)
-      venue.genres.append(genre)  
 
-    venue.facebook_link = request.form['facebook_link']
-    venue.image_link = request.form['image_link']
-    venue.website = request.form['website']
     venue.seeking_talent = ('seeking_talent' in request.form.keys() and (request.form['seeking_talent'] == 'y' or request.form['seeking_talent'] == 'on'))
-    venue.seeking_description = request.form['seeking_description']
-    venue.created = dt.datetime.now()
+
+    
+    
     db.session.add(venue)
     db.session.commit()
     # on successful db insert, flash success
@@ -589,12 +632,12 @@ def edit_artist(artist_id):
     "genres": [genre.name for genre in artist.genres],
     "city": artist.city,
     "state": artist.state,
-    "phone": artist.phone,
-    "website": artist.website,
-    "facebook_link": artist.facebook_link,
+    "phone": artist.phone or "",
+    "website": artist.website or "",
+    "facebook_link": artist.facebook_link or "",
     "seeking_venue": artist.seeking_venue,
     "seeking_description":  artist.seeking_description,
-    "image_link": artist.image_link
+    "image_link": artist.image_link or ""
   }
   # TODO: populate form with fields from artist with ID <artist_id>
   return render_template('forms/edit_artist.html', form=form, artist=data)
@@ -605,21 +648,8 @@ def edit_artist_submission(artist_id):
   # artist record with ID <artist_id> using the new attributes
   try:
     artist = Artist.query.get(artist_id)
-    artist.name = request.form['name']
-    artist.city = request.form['city']
-    artist.state = request.form['state']
-    artist.phone = request.form['phone']
-    artist.genres = []
-    for genre_name in request.form.getlist('genres'):
-      genre = Genre.query.filter(Genre.name == genre_name).first()
-      if genre is None:
-        genre = Genre(name=genre_name)
-      artist.genres.append(genre) 
-    artist.facebook_link = request.form['facebook_link']
-    artist.image_link = request.form['image_link']
-    artist.website = request.form['website']
+    edit_model(artist, request.form)
     artist.seeking_venue = ('seeking_venue' in request.form.keys() and (request.form['seeking_venue'] == 'y' or request.form['seeking_venue'] == 'on'))
-    artist.seeking_description = request.form['seeking_description']
     db.session.add(artist)
     db.session.commit()
   except:
@@ -657,12 +687,12 @@ def edit_venue(venue_id):
     "address": venue.address,
     "city": venue.city,
     "state": venue.state,
-    "phone": venue.phone,
-    "website": venue.website,
-    "facebook_link": venue.facebook_link,
+    "phone": venue.phone or "",
+    "website": venue.website or "",
+    "facebook_link": venue.facebook_link or "",
     "seeking_talent": venue.seeking_talent,
     "seeking_description": venue.seeking_description,
-    "image_link": venue.image_link,
+    "image_link": venue.image_link or "",
   }
   # TODO: populate form with values from venue with ID <venue_id>
   return render_template('forms/edit_venue.html', form=form, venue=data)
@@ -673,22 +703,9 @@ def edit_venue_submission(venue_id):
   # venue record with ID <venue_id> using the new attributes
   try:
     venue = Venue.query.get(venue_id)
-    venue.name = request.form['name']
-    venue.city = request.form['city']
-    venue.state = request.form['state']
+    edit_model(venue, request.form)
     venue.address = request.form['address']
-    venue.phone = request.form['phone']
-    venue.genres = []
-    for genre_name in request.form.getlist('genres'):
-      genre = Genre.query.filter(Genre.name == genre_name).first()
-      if genre is None:
-        genre = Genre(name=genre_name)
-      venue.genres.append(genre) 
-    venue.facebook_link = request.form['facebook_link']
-    venue.image_link = request.form['image_link']
-    venue.website = request.form['website']
     venue.seeking_talent = ('seeking_talent' in request.form.keys() and (request.form['seeking_talent'] == 'y' or request.form['seeking_talent'] == 'on'))
-    venue.seeking_description = request.form['seeking_description']
     db.session.add(venue)
     db.session.commit()
   except:
@@ -713,22 +730,9 @@ def create_artist_submission():
   # TODO: modify data to be the data object returned from db insertion
   try:
     artist = Artist()
-    artist.name = request.form['name']
-    artist.city = request.form['city']
-    artist.state = request.form['state']
-    artist.phone = request.form['phone']
-    for genre_name in request.form.getlist('genres'):
-      genre = Genre.query.filter(Genre.name == genre_name).first()
-      if genre is None:
-        genre = Genre(name=genre_name)
-      artist.genres.append(genre)  
-
-    artist.facebook_link = request.form['facebook_link']
-    artist.image_link = request.form['image_link']
-    artist.website = request.form['website']
+    populate_model(artist, request.form)
     artist.seeking_venue = ('seeking_venue' in request.form.keys() and request.form['seeking_venue'] == 'y')
-    artist.seeking_description = request.form['seeking_description']
-    artist.created = dt.datetime.now()
+
     db.session.add(artist)
     db.session.commit()
     # on successful db insert, flash success
