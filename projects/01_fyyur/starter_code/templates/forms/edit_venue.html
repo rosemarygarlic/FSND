@@ -25,15 +25,15 @@
       </div>
       <div class="form-group">
           <label for="phone">Phone</label>
-          {{ form.phone(class_ = 'form-control', placeholder='xxx-xxx-xxxx', value = venue.phone, autofocus = true) }}
+          {{ form.phone(class_ = 'form-control', placeholder='xxx-xxx-xxxx', pattern='^\d{3}-?\d{3}-?\d{4}$', value = venue.phone, autofocus = true) }}
         </div>
         <div class="form-group">
           <label for="website">Website</label>
-          {{ form.website(class_ = 'form-control', placeholder='http://', value = venue.website, autofocus = true) }}
+          {{ form.website(class_ = 'form-control', placeholder='http://', pattern='^https?://.+$', value = venue.website, autofocus = true) }}
       </div>
       <div class="form-group">
         <label for="image_link">Image</label>
-        {{ form.image_link(class_ = 'form-control', placeholder='http://', value = venue.image_link, autofocus = true) }}
+        {{ form.image_link(class_ = 'form-control', placeholder='http://', pattern='^https?://.+$',  value = venue.image_link, autofocus = true) }}
       </div>
       <div class="form-group">
         <label for="genres">Genres</label>
@@ -42,7 +42,7 @@
       </div>
       <div class="form-group">
           <label for="genres">Facebook Link</label>
-          {{ form.facebook_link(class_ = 'form-control', placeholder='http://', value = venue.facebook_link, autofocus = true) }}
+          {{ form.facebook_link(class_ = 'form-control', placeholder='http://', pattern='^https?://.+$',  value = venue.facebook_link, autofocus = true) }}
         </div>
         <div class="form-group">
           <label>Are you looking for talents?</label>

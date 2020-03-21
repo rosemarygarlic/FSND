@@ -1,10 +1,6 @@
 #----------------------------------------------------------------------------#
 # Imports
 #----------------------------------------------------------------------------#
-# TODO:
-# check referential integrity
-# set constrains on attribute formats
-# check how migrations work
 import json
 import dateutil.parser
 import babel
@@ -44,7 +40,7 @@ class Venue(db.Model):
     state = db.Column(db.String(120), nullable = False)
     address = db.Column(db.String(120), nullable = False)
     phone = db.Column(db.String(120), nullable = False)
-    genres = db.Column(db.ARRAY(db.String(120)))
+    genres = db.Column(db.ARRAY(db.String(120)), nullable=False)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String(120))
@@ -64,7 +60,7 @@ class Artist(db.Model):
     city = db.Column(db.String(120), nullable = False)
     state = db.Column(db.String(120), nullable = False)
     phone = db.Column(db.String(120), nullable = False)
-    genres = db.Column(db.ARRAY(db.String(120)))
+    genres = db.Column(db.ARRAY(db.String(120)), nullable = False)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String(120))
@@ -308,6 +304,7 @@ def show_venue(venue_id):
 @app.route('/venues/create', methods=['GET'])
 def create_venue_form():
   form = VenueForm()
+  form.validate_on_submit()
   return render_template('forms/new_venue.html', form=form)
 
 @app.route('/venues/create', methods=['POST'])
@@ -315,6 +312,7 @@ def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
   try:
+    print(request.form)
     venue = Venue()
     venue.name = request.form['name']
     venue.city = request.form['city']
@@ -325,7 +323,7 @@ def create_venue_submission():
     venue.facebook_link = request.form['facebook_link']
     venue.image_link = request.form['image_link']
     venue.website = request.form['website']
-    venue.seeking_talent = (request.form['seeking_talent'] == 'y' or request.form['seeking_talent'] == 'on')
+    venue.seeking_talent = ('seeking_talent' in request.form.keys() and (request.form['seeking_talent'] == 'y' or request.form['seeking_talent'] == 'on'))
     venue.seeking_description = request.form['seeking_description']
     venue.created = dt.datetime.now()
     db.session.add(venue)
@@ -571,7 +569,7 @@ def edit_artist_submission(artist_id):
     artist.facebook_link = request.form['facebook_link']
     artist.image_link = request.form['image_link']
     artist.website = request.form['website']
-    artist.seeking_venue = (request.form['seeking_venue'] == 'y' or request.form['seeking_venue'] == 'on')
+    artist.seeking_venue = ('seeking_venue' in request.form.keys() and (request.form['seeking_venue'] == 'y' or request.form['seeking_venue'] == 'on'))
     artist.seeking_description = request.form['seeking_description']
     db.session.add(artist)
     db.session.commit()
@@ -635,7 +633,7 @@ def edit_venue_submission(venue_id):
     venue.facebook_link = request.form['facebook_link']
     venue.image_link = request.form['image_link']
     venue.website = request.form['website']
-    venue.seeking_talent = (request.form['seeking_talent'] == 'y' or request.form['seeking_talent'] == 'on')
+    venue.seeking_talent = ('seeking_talent' in request.form.keys() and (request.form['seeking_talent'] == 'y' or request.form['seeking_talent'] == 'on'))
     venue.seeking_description = request.form['seeking_description']
     db.session.add(venue)
     db.session.commit()
@@ -669,7 +667,7 @@ def create_artist_submission():
     artist.facebook_link = request.form['facebook_link']
     artist.image_link = request.form['image_link']
     artist.website = request.form['website']
-    artist.seeking_venue = (request.form['seeking_venue'] == 'y')
+    artist.seeking_venue = ('seeking_venue' in request.form.keys() and request.form['seeking_venue'] == 'y')
     artist.seeking_description = request.form['seeking_description']
     artist.created = dt.datetime.now()
     db.session.add(artist)
