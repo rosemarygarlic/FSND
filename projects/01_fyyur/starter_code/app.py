@@ -54,7 +54,7 @@ class Venue(db.Model):
     image_link = db.Column(db.String(500), unique = True)
     facebook_link = db.Column(db.String(120), unique = True)
     website = db.Column(db.String(120))
-    seeking_talent = db.Column(db.Boolean)
+    seeking_talent = db.Column(db.Boolean, default = False)
     seeking_description = db.Column(db.String)
     created = db.Column(db.DateTime)
     shows = db.relationship('Show', back_populates='venue', cascade='delete')
@@ -75,7 +75,7 @@ class Artist(db.Model):
     image_link = db.Column(db.String(500), unique = True)
     facebook_link = db.Column(db.String(120), unique = True)
     website = db.Column(db.String(120))
-    seeking_venue = db.Column(db.Boolean)
+    seeking_venue = db.Column(db.Boolean, default = False)
     seeking_description = db.Column(db.String())
     created = db.Column(db.DateTime)
     shows = db.relationship('Show', back_populates='artist', cascade='delete')
@@ -140,6 +140,7 @@ def populate_model(model, data):
       model.website = data['website']
     model.seeking_description = data['seeking_description']
     model.created = dt.datetime.now()
+    return model
 
 # Update common attributes from 'edit' request data for venue and artist
 def edit_model(model, data):
@@ -168,7 +169,7 @@ def edit_model(model, data):
     else:
       model.website = None
     model.seeking_description = data['seeking_description']
-
+    return model
   
 
 
@@ -408,8 +409,8 @@ def create_venue_submission():
   try:
     print(request.form)
     venue = Venue()
-    populate_model(venue, request.form)
     venue.address = request.form['address']
+    venue = populate_model(venue, request.form) 
     venue.seeking_talent = ('seeking_talent' in request.form.keys() and (request.form['seeking_talent'] == 'y' or request.form['seeking_talent'] == 'on'))
     db.session.add(venue)
     db.session.commit()
@@ -451,6 +452,7 @@ def edit_venue(venue_id):
   }
   """
   venue = Venue.query.get(venue_id)
+  print(venue.seeking_talent)
   data = {
     "id": venue.id,
     "name": venue.name,
@@ -474,7 +476,7 @@ def edit_venue_submission(venue_id):
   # venue record with ID <venue_id> using the new attributes
   try:
     venue = Venue.query.get(venue_id)
-    edit_model(venue, request.form)
+    venue = edit_model(venue, request.form)
     venue.address = request.form['address']
     venue.seeking_talent = ('seeking_talent' in request.form.keys() and (request.form['seeking_talent'] == 'y' or request.form['seeking_talent'] == 'on'))
     db.session.add(venue)
@@ -729,7 +731,7 @@ def edit_artist_submission(artist_id):
   # artist record with ID <artist_id> using the new attributes
   try:
     artist = Artist.query.get(artist_id)
-    edit_model(artist, request.form)
+    artist = edit_model(artist, request.form)
     artist.seeking_venue = ('seeking_venue' in request.form.keys() and (request.form['seeking_venue'] == 'y' or request.form['seeking_venue'] == 'on'))
     db.session.add(artist)
     db.session.commit()
@@ -758,7 +760,7 @@ def create_artist_submission():
   # TODO: modify data to be the data object returned from db insertion
   try:
     artist = Artist()
-    populate_model(artist, request.form)
+    artist = populate_model(artist, request.form)
     artist.seeking_venue = ('seeking_venue' in request.form.keys() and request.form['seeking_venue'] == 'y')
     db.session.add(artist)
     db.session.commit()
