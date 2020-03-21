@@ -30,6 +30,15 @@ migrate = Migrate(app, db)
 # Models.
 #----------------------------------------------------------------------------#
 
+venue_genres = db.Table('venue_ganres', 
+      db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key = True),
+      db.Column('genre_id', db.Integer, db.ForeignKey('Genre.id'), primary_key = True)
+)
+
+artist_genres = db.Table('artist_ganres', 
+      db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key = True),
+      db.Column('genre_id', db.Integer, db.ForeignKey('Genre.id'), primary_key = True)
+)
 
 class Venue(db.Model):
     __tablename__ = 'Venue'
@@ -40,7 +49,8 @@ class Venue(db.Model):
     state = db.Column(db.String(120), nullable = False)
     address = db.Column(db.String(120), nullable = False)
     phone = db.Column(db.String(120), nullable = False)
-    genres = db.Column(db.ARRAY(db.String(120)), nullable=False)
+    genres = db.relationship('Genre', secondary=venue_genres, 
+                             backref = db.backref('venues', lazy = True))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String(120))
@@ -60,7 +70,8 @@ class Artist(db.Model):
     city = db.Column(db.String(120), nullable = False)
     state = db.Column(db.String(120), nullable = False)
     phone = db.Column(db.String(120), nullable = False)
-    genres = db.Column(db.ARRAY(db.String(120)), nullable = False)
+    genres = db.relationship('Genre', secondary=artist_genres, 
+                             backref = db.backref('artists', lazy = True))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String(120))
@@ -79,6 +90,12 @@ class Show(db.Model):
     start_time = db.Column(db.DateTime, nullable = False)
     venue = db.relationship(Venue, back_populates='shows')
     artist = db.relationship(Artist, back_populates='shows')
+
+class Genre(db.Model):
+  __tablename__ = 'Genre'
+
+  id = db.Column(db.Integer, primary_key = True)
+  name = db.Column(db.String(120), nullable = False)
 
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
@@ -146,7 +163,7 @@ def venues():
   for city, state in cities:
     city_data = {'city' : city, 'state' : state, 'venues' : []}
 
-    for venue in Venue.query.filter(Venue.city==city).all():
+    for venue in Venue.query.filter(Venue.city==city, Venue.state==state).all():
       venue_data ={'id' : venue.id, 'name' : venue.name}
       shows = venue.shows
       upcoming_shows = [show for show in shows if show.start_time > dt.datetime.now()]
@@ -279,7 +296,7 @@ def show_venue(venue_id):
   data = {
     "id": venue.id,
     "name": venue.name,
-    "genres": venue.genres,
+    "genres": [genre.name for genre in venue.genres],
     "address": venue.address,
     "city": venue.city,
     "state": venue.state,
@@ -328,7 +345,12 @@ def create_venue_submission():
     venue.state = request.form['state']
     venue.address = request.form['address']
     venue.phone = request.form['phone']
-    venue.genres = request.form.getlist('genres')
+    for genre_name in request.form.getlist('genres'):
+      genre = Genre.query.filter(Genre.name == genre_name).first()
+      if genre is None:
+        genre = Genre(name=genre_name)
+      venue.genres.append(genre)  
+
     venue.facebook_link = request.form['facebook_link']
     venue.image_link = request.form['image_link']
     venue.website = request.form['website']
@@ -511,7 +533,7 @@ def show_artist(artist_id):
   data = {
     "id": artist.id,
     "name": artist.name,
-    "genres": artist.genres,
+    "genres": [genre.name for genre in artist.genres],
     "city": artist.city,
     "state": artist.state,
     "phone": artist.phone,
@@ -562,7 +584,7 @@ def edit_artist(artist_id):
   data = {
     "id": artist.id,
     "name": artist.name,
-    "genres": artist.genres,
+    "genres": [genre.name for genre in artist.genres],
     "city": artist.city,
     "state": artist.state,
     "phone": artist.phone,
@@ -585,7 +607,12 @@ def edit_artist_submission(artist_id):
     artist.city = request.form['city']
     artist.state = request.form['state']
     artist.phone = request.form['phone']
-    artist.genres = request.form.getlist('genres')
+    artist.genres = []
+    for genre_name in request.form.getlist('genres'):
+      genre = Genre.query.filter(Genre.name == genre_name).first()
+      if genre is None:
+        genre = Genre(name=genre_name)
+      artist.genres.append(genre) 
     artist.facebook_link = request.form['facebook_link']
     artist.image_link = request.form['image_link']
     artist.website = request.form['website']
@@ -624,7 +651,7 @@ def edit_venue(venue_id):
   data = {
     "id": venue.id,
     "name": venue.name,
-    "genres": venue.genres,
+    "genres": [genre.name for genre in venue.genres],
     "address": venue.address,
     "city": venue.city,
     "state": venue.state,
@@ -649,7 +676,12 @@ def edit_venue_submission(venue_id):
     venue.state = request.form['state']
     venue.address = request.form['address']
     venue.phone = request.form['phone']
-    venue.genres = request.form.getlist('genres')
+    venue.genres = []
+    for genre_name in request.form.getlist('genres'):
+      genre = Genre.query.filter(Genre.name == genre_name).first()
+      if genre is None:
+        genre = Genre(name=genre_name)
+      venue.genres.append(genre) 
     venue.facebook_link = request.form['facebook_link']
     venue.image_link = request.form['image_link']
     venue.website = request.form['website']
@@ -683,7 +715,12 @@ def create_artist_submission():
     artist.city = request.form['city']
     artist.state = request.form['state']
     artist.phone = request.form['phone']
-    artist.genres = list(request.form.getlist('genres'))
+    for genre_name in request.form.getlist('genres'):
+      genre = Genre.query.filter(Genre.name == genre_name).first()
+      if genre is None:
+        genre = Genre(name=genre_name)
+      artist.genres.append(genre)  
+
     artist.facebook_link = request.form['facebook_link']
     artist.image_link = request.form['image_link']
     artist.website = request.form['website']
