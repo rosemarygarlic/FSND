@@ -20,6 +20,7 @@ def create_app(test_config=None):
   @TODO
   -Implement and test error handling
   -Fix pagination
+  -rubric
   '''
   CORS(app, resources={r"/*": {"origins": "*"}})
   
@@ -40,7 +41,10 @@ def create_app(test_config=None):
   @app.route('/categories')
   def get_categories():
     all_categories = Category.query.all()
-    return jsonify({'categories':{c.id:c.type for c in all_categories}})
+    return jsonify({
+      'success': True,
+      'categories':{c.id:c.type for c in all_categories}
+      })
 
 
   '''
@@ -72,6 +76,7 @@ def create_app(test_config=None):
   
 
     return jsonify({
+      'success': True,
       'questions' : questions,
       'totalQuestions' : len(all_questions),
       'categories': {c.id:c.type for c in all_categories},
@@ -96,7 +101,9 @@ def create_app(test_config=None):
 
       question.delete()
 
-      return jsonify({'success': True, 'questionId':question_id})
+      return jsonify({
+        'success': True, 
+        'questionId':question_id})
     except:
       abort(422)
 
@@ -125,18 +132,23 @@ def create_app(test_config=None):
     if not (search_term is None):
       search_results = Question.query.filter(Question.question.ilike('%{}%'.format(search_term))).all()
       return jsonify({
+        'success' : True,
         'questions' : [r.format() for r in search_results], 
         'totalQuestions' : len(search_results),
         'currentCategory' : ''
       })
 
-
+    if not all([new_question, new_answer, new_difficulty, new_category]):
+      abort(400)
 
     try:
       question = Question(new_question, new_answer, new_category, new_difficulty)
       question.insert()
 
-      return jsonify({'success' : True, 'questionId': question.id})
+      return jsonify({
+        'success' : True, 
+        'questionId': question.id
+        })
     except:
       abort(422)
     
@@ -172,6 +184,7 @@ def create_app(test_config=None):
     questions = Question.query.filter(Question.category == category_id).all()
 
     return jsonify({
+      'success': True,
       'questions' : [q.format() for q in questions],
       'totalQuestions' : len(questions),
       'currentCategory' : Category.query.get(category_id).type
@@ -196,11 +209,19 @@ def create_app(test_config=None):
     previous_questions = body.get('previous_questions', None)
     quiz_category = body.get('quiz_category', None)
 
+    if not quiz_category or not quiz_category['id']:
+      abort(400)
+
     if int(quiz_category['id']) == 0:
       quiz_category_questions = Question.query.all()
     else:
+      category = Category.query.get(quiz_category['id'])
+      if not category:
+         abort(422)
       quiz_category_questions = Question.query.filter(Question.category == quiz_category['id']).all()
    
+
+
     quiz_category_questions_ids = list(set([ q.id for q in quiz_category_questions]) - set(previous_questions))
     
     if not quiz_category_questions_ids:
@@ -220,6 +241,7 @@ def create_app(test_config=None):
   @app.errorhandler(404)
   def not_found(error):
       return jsonify({
+            "success": False,
             "error": 404,
             "message": "resource not found"
       }), 404
@@ -227,16 +249,18 @@ def create_app(test_config=None):
   @app.errorhandler(422)
   def not_found(error):
       return jsonify({
-            "error": 404,
+            "success": False,
+            "error": 422,
             "message": "unprocessable request"
-      }), 404
+      }), 422
 
   @app.errorhandler(400)
   def not_found(error):
       return jsonify({
+            "success": False,
             "error": 400,
             "message": "bad request"
-      }), 404
+      }), 400
   
   return app
 
