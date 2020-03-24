@@ -53,7 +53,7 @@ def create_app(test_config=None):
     end = QUESTIONS_PER_PAGE
 
     all_questions = Question.query.all()
-    all_categories = Category.query.all()
+    all_categories = Category.query.order_by(Category.id).all()
 
     if start>len(all_questions):
       abort(404)
@@ -65,8 +65,8 @@ def create_app(test_config=None):
     return jsonify({
       'questions' : questions,
       'totalQuestions' : len(all_questions),
-      'categories': [c.type for c in all_categories],
-      'currentCategory': 'all'
+      'categories': {c.id:c.type for c in all_categories},
+      'currentCategory': 'Science'
     })
 
   '''
@@ -107,6 +107,15 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+  @app.route('/categories/<int:category_id>/questions')
+  def show_category_questions(category_id):
+    questions = Question.query.filter(Question.category == category_id).all()
+
+    return jsonify({
+      'questions' : [q.format() for q in questions],
+      'totalQuestions' : len(questions),
+      'currentCategory' : Category.query.get(category_id).type
+    })
 
 
   '''

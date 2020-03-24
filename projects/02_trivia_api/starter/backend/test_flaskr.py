@@ -45,7 +45,15 @@ class TriviaTestCase(unittest.TestCase):
             Question('Question 8', 'Answer 8',  2, 4),
             Question('Question 9', 'Answer 9', 1, 4),
             Question('Question 10', 'Answer 10',  2, 4),
-            Question('Question 11', 'Answer 11',  2, 4)
+            Question('Question 11', 'Answer 11',  2, 4),
+            Question('Question 12', 'Answer 9', 1, 4),
+            Question('Question 13', 'Answer 9', 1, 4),
+            Question('Question 14', 'Answer 9', 1, 4),
+            Question('Question 15', 'Answer 9', 1, 4),
+            Question('Question 16', 'Answer 9', 1, 4),
+            Question('Question 17', 'Answer 9', 1, 4),
+            Question('Question 18', 'Answer 9', 1, 4),
+            Question('Question 19', 'Answer 9', 1, 4),
 
         ]
 
@@ -78,6 +86,19 @@ class TriviaTestCase(unittest.TestCase):
         res = self.client().get('/questions?page=100')
 
         self.assertEqual(res.status_code, 404)
+
+
+    def test_get_questions_in_category(self):
+        res = self.client().get('/categories/1/questions')
+        
+        self.assertEqual(res.status_code, 200)
+
+        data = json.loads(res.data)
+
+        self.assertEqual(len(data['questions']), 12)
+        self.assertEqual(data['totalQuestions'], 12)
+        self.assertTrue(data['currentCategory'], 'Science')
+
 
 
 # Make the tests conveniently executable
