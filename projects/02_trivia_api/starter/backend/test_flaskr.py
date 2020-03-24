@@ -106,10 +106,13 @@ class TriviaTestCase(unittest.TestCase):
         question_id = 5
         res = self.client().delete('/questions/{}'.format(question_id))
         question = Question.query.get(question_id)
+        data = json.loads(res.data)
 
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(question, None)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['questionId'], question_id)
 
     def test_422_if_delete_nonexistent_question(self):
         question_id = 1000
@@ -119,10 +122,42 @@ class TriviaTestCase(unittest.TestCase):
 
     def test_get_categories(self):
         res = self.client().get('/categories')
-        data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
+
+        data = json.loads(res.data)
+
         self.assertEqual(len(data['categories']), len(self.test_categories))
+    
+    def test_post_question(self):
+        question = 'Added question?'
+        res = self.client().post('/questions', json = { 'question' : question,
+                                                         'answer' : 'Answer',                      
+                                                          'difficulty' : 3,
+                                                           'category': 2})
+
+        question = Question.query.filter(Question.question == question).one_or_none()
+
+        self.assertEqual(res.status_code, 200)
+
+        data = json.loads(res.data)
+
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['questionId'])
+        self.assertTrue(question)
+    
+
+    def test_405_if_post_question_wrong_path(self):
+        res = self.client().post('/questions/25', json = { 'question' : "Question wrong path",
+                                                         'answer' : 'Answer',                      
+                                                          'difficulty' : 3,
+                                                           'category': 1})
+
+        self.assertEqual(res.status_code, 405)
+
+
+
+
 
 
 
