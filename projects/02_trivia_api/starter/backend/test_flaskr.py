@@ -80,7 +80,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(len(data['questions']), 10)
         self.assertEqual(data['totalQuestions'], len(self.test_questions))
         self.assertEqual(len(data['categories']), len(self.test_categories))
-        self.assertTrue(data['currentCategory'])
 
     def test_404_if_beyond_results(self):
         res = self.client().get('/questions?page=100')
@@ -98,6 +97,26 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(len(data['questions']), 12)
         self.assertEqual(data['totalQuestions'], 12)
         self.assertTrue(data['currentCategory'], 'Science')
+
+    def test_404_if_wrong_category(self):
+        res = self.client().get('/categories/100/questions')
+        self.assertEqual(res.status_code, 404)
+
+    def test_delete_question_successfully(self):
+        question_id = 5
+        res = self.client().delete('/questions/{}'.format(question_id))
+        question = Question.query.get(question_id)
+
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(question, None)
+
+    def test_422_if_delete_nonexistent_question(self):
+        question_id = 1000
+        res = self.client().delete('/questions/{}'.format(question_id))
+
+        self.assertEqual(res.status_code, 422)
+
 
 
 
