@@ -82,6 +82,16 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(len(data['questions']), 10)
         self.assertEqual(data['totalQuestions'], len(self.test_questions))
         self.assertEqual(len(data['categories']), len(self.test_categories))
+    
+    def test_questions_pagination(self):
+        res = self.client().get('/questions?page=2')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['questions']), 9)
+        self.assertEqual(data['totalQuestions'], len(self.test_questions))
+        self.assertEqual(len(data['categories']), len(self.test_categories))
 
     def test_404_if_beyond_results(self):
         res = self.client().get('/questions?page=100')
@@ -98,7 +108,7 @@ class TriviaTestCase(unittest.TestCase):
         
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
-        self.assertEqual(len(data['questions']), 12)
+        self.assertEqual(len(data['questions']), 10)
         self.assertEqual(data['totalQuestions'], 12)
         self.assertTrue(data['currentCategory'], 'Science')
 
@@ -224,7 +234,6 @@ class TriviaTestCase(unittest.TestCase):
    
         })
         data = json.loads(res.data)
-        print(data)
     
         self.assertEqual(res.status_code, 400)
 

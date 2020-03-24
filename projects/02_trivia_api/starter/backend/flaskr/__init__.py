@@ -16,11 +16,6 @@ def create_app(test_config=None):
 
   '''
   @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
-  
-  @TODO
-  -Implement and test error handling
-  -Fix pagination
-  -rubric
   '''
   CORS(app, resources={r"/*": {"origins": "*"}})
   
@@ -32,6 +27,17 @@ def create_app(test_config=None):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PATCH,POST,DELETE,OPTIONS')
     return response
+
+   #helper to paginate question list:
+  def paginate(request, questions):
+    page = request.args.get('page', 1, int)
+    start = (page - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+    if start > len(questions):
+      abort(404)
+    return [q.format() for q in questions[start:end]]
+
+
 
   '''
   @TODO: 
@@ -61,23 +67,12 @@ def create_app(test_config=None):
   '''
   @app.route('/questions')
   def list_questions():
-    page = request.args.get('page', 1, int)
-    start = (page-1)*QUESTIONS_PER_PAGE
-    end = QUESTIONS_PER_PAGE
-
     all_questions = Question.query.all()
     all_categories = Category.query.order_by(Category.id).all()
 
-    if start>len(all_questions):
-      abort(404)
-
-    questions = [q.format() for q in all_questions[start:end]]
-
-  
-
     return jsonify({
       'success': True,
-      'questions' : questions,
+      'questions' : paginate(request, all_questions),
       'totalQuestions' : len(all_questions),
       'categories': {c.id:c.type for c in all_categories},
       'currentCategory': ''
@@ -133,7 +128,7 @@ def create_app(test_config=None):
       search_results = Question.query.filter(Question.question.ilike('%{}%'.format(search_term))).all()
       return jsonify({
         'success' : True,
-        'questions' : [r.format() for r in search_results], 
+        'questions' : paginate(request, search_results), 
         'totalQuestions' : len(search_results),
         'currentCategory' : ''
       })
@@ -185,7 +180,7 @@ def create_app(test_config=None):
 
     return jsonify({
       'success': True,
-      'questions' : [q.format() for q in questions],
+      'questions' : paginate(request, questions),
       'totalQuestions' : len(questions),
       'currentCategory' : Category.query.get(category_id).type
     })
