@@ -2,6 +2,7 @@ import os
 import unittest
 import json
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import upgrade
 
 from flaskr import create_app
 from models import setup_db, Question, Category
@@ -17,14 +18,16 @@ class TriviaTestCase(unittest.TestCase):
         self.database_name = "trivia_test"
         #self.database_path = "postgres://{}/{}".format('localhost:5432', self.database_name)
         self.database_path = "sqlite://"
-        setup_db(self.app, self.database_path)
-
+        self.db = setup_db(self.app, self.database_path)
+ 
         # binds the app to the current context
         with self.app.app_context():
-            self.db = SQLAlchemy()
-           # self.db.init_app(self.app)
+            #self.db = SQLAlchemy()
+            #self.db.init_app(self.app)
             # create all tables
             self.db.create_all()
+            #config.set_main_option("script_location", "migrations")
+            #command.upgrade(config, "head")
 
         self.test_categories = [
             Category('Science'),
@@ -42,15 +45,15 @@ class TriviaTestCase(unittest.TestCase):
             Question('Question 5', 'Answer 5',  2, 4),
             Question('Question 6', 'Answer 6',  1, 4),
             Question('Question 7', 'Answer 7',  2, 4),
-            Question('Question 8', 'Answer 8',  2, 4),
+            Question('Question to find 8', 'Answer 8',  2, 4),
             Question('Question 9', 'Answer 9', 1, 4),
             Question('Question 10', 'Answer 10',  2, 4),
-            Question('Question 11', 'Answer 11',  2, 4),
+            Question('Question to find 11', 'Answer 11',  2, 4),
             Question('Question 12', 'Answer 9', 1, 4),
             Question('Question 13', 'Answer 9', 1, 4),
             Question('Question 14', 'Answer 9', 1, 4),
             Question('Question 15', 'Answer 9', 1, 4),
-            Question('Question 16', 'Answer 9', 1, 4),
+            Question('Question to find 16', 'Answer 9', 1, 4),
             Question('Question 17', 'Answer 9', 1, 4),
             Question('Question 18', 'Answer 9', 1, 4),
             Question('Question 19', 'Answer 9', 1, 4),
@@ -145,15 +148,30 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
         self.assertTrue(data['questionId'])
         self.assertTrue(question)
+
     
 
-    def test_405_if_post_question_wrong_path(self):
-        res = self.client().post('/questions/25', json = { 'question' : "Question wrong path",
-                                                         'answer' : 'Answer',                      
-                                                          'difficulty' : 3,
-                                                           'category': 1})
+    def test_search_with_results(self):
+        res = self.client().post('/questions', json={'searchTerm': 'find'})    
 
-        self.assertEqual(res.status_code, 405)
+        data = json.loads(res.data)
+
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(len(data['questions']), 3)
+        self.assertEqual(data['totalQuestions'], 3)
+    
+
+    def test_search_without_results(self):
+        res = self.client().post('/questions', json={'searchTerm': 'nothingtofind'})    
+
+        data = json.loads(res.data)
+
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(len(data['questions']), 0)
+        self.assertEqual(data['totalQuestions'], 0)
+
 
 
 

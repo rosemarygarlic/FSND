@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
 
+
 from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
@@ -115,6 +116,17 @@ def create_app(test_config=None):
     new_answer = body.get('answer', None)
     new_difficulty = body.get('difficulty', None)
     new_category = body.get('category', None)
+    search_term = body.get('searchTerm', None)
+
+    if search_term:
+      search_results = Question.query.filter(Question.question.ilike('%{}%'.format(search_term))).all()
+      return jsonify({
+        'questions' : [r.format() for r in search_results], 
+        'totalQuestions' : len(search_results),
+        'currentCategory' : ''
+      })
+
+
 
     try:
       question = Question(new_question, new_answer, new_category, new_difficulty)
