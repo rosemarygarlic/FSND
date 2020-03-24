@@ -22,8 +22,6 @@ def setup_db(app, database_path=database_path):
     
     return db
 
-    #db.create_all()
-
 '''
 Question
 

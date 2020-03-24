@@ -28,7 +28,10 @@ def create_app(test_config=None):
     response.headers.add('Access-Control-Allow-Methods', 'GET,PATCH,POST,DELETE,OPTIONS')
     return response
 
-   #helper to paginate question list:
+
+  """ 
+  Helper to paginate question list:
+  """
   def paginate(request, questions):
     page = request.args.get('page', 1, int)
     start = (page - 1) * QUESTIONS_PER_PAGE
@@ -75,7 +78,6 @@ def create_app(test_config=None):
       'questions' : paginate(request, all_questions),
       'totalQuestions' : len(all_questions),
       'categories': {c.id:c.type for c in all_categories},
-      'currentCategory': ''
     })
 
   '''
@@ -130,7 +132,6 @@ def create_app(test_config=None):
         'success' : True,
         'questions' : paginate(request, search_results), 
         'totalQuestions' : len(search_results),
-        'currentCategory' : ''
       })
 
     if not all([new_question, new_answer, new_difficulty, new_category]):
@@ -256,6 +257,7 @@ def create_app(test_config=None):
             "error": 400,
             "message": "bad request"
       }), 400
+  
   
   return app
 
