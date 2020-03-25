@@ -235,12 +235,13 @@ def create_app(test_config=None):
                                       - set(previous_questions))
         
         if not category_questions_ids:
-            return jsonify({})
+            return jsonify({'success': True})
         
         current_question = Question.query.get(
             random.choice(category_questions_ids))
 
         return jsonify({
+            'success': True,
             'question': current_question.format() 
         })
 

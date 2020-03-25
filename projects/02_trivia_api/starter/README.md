@@ -42,3 +42,71 @@ The `./frontend` directory contains a complete React frontend to consume the dat
 Pay special attention to what data the frontend is expecting from each API response to help guide how you format your API. 
 
 [View the README.md within ./frontend for more details.](./frontend/README.md)
+
+
+---
+
+# Project Documentation
+
+## Project Title
+
+This project implements a Trivia game where users can add questions to different categories and play the game with friends
+
+The backend code follows PEP8 style guidelines
+
+## Getting Started
+
+### Prerequisites and Local Development
+
+Developers should already have Python3, pip and node installed on their local machines
+
+#### Backend
+
+To install all the required packages from the backend folder run 
+```pip install -r requirements.txt
+```
+
+To start the backend run from the backend directory:
+```
+export FLASK_APP=flaskr
+export FLASK_ENV=development
+flask run
+```
+
+If running locally on Windows, look for the commands in the Flask documentation.
+The backend applicaion now should be up and running at http://127.0.0.1:5000.
+
+#### Frontend
+
+From the frontend folder run the following command to install all the dependencies:
+```
+npm install
+```
+
+To start the client run:
+```
+npm start
+```
+
+By default, the frontend will run on http://127.0.0.1:3000
+
+
+### Tests
+
+To run all the tests for backend application run from the backend directory:
+```
+python test_flaskr.py
+```
+
+## API Reference. 
+You can find documentation for API in the backend directory README file 
+
+## Authors
+Udacity, Anastasia Lisina
+
+## Acknowledgements
+Thank Udacity team and Caryn McCarthy for the great course on the API development!
+
+
+
+
